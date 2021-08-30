@@ -1,0 +1,280 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(factoextra)
+library(ggfortify)
+library(ggplot2)
+library(dplyr)
+```
+
+```{r}
+data <- read.csv("https://raw.githubusercontent.com/reisanar/datasets/master/macmenu.csv")
+```
+
+```{r}
+data #make sure data loaded
+```
+
+
+```{r}
+summary(data)
+```
+
+```{r}
+#summary(menu_items_stats[1:3])
+```
+
+
+
+```{r}
+dailyCals <- 2000
+caloriePercents <- data %>%
+  mutate(DailyCaloriePercent = (Calories / dailyCals) * 100) %>% 
+  select(Item, DailyCaloriePercent) %>% 
+  arrange(desc(DailyCaloriePercent))
+```
+
+
+```{r}
+#this chunk of code is to make a data frame with only numeric values
+x <- data[ , 4:24]
+```
+
+
+```{r}
+stats <- data_frame(
+  var_name = colnames(x),
+  Avg = map_dbl(x, mean),
+  Min = map_dbl(x, min) ,
+  Max = map_dbl(x, max),
+)
+```
+
+
+```{r}
+breakfast <- data %>% 
+    filter(Category == "Breakfast")
+beefpork <- data %>% 
+    filter(Category == "Beef & Pork")
+chickenfish <- data %>% 
+    filter(Category == "Chicken & Fish")
+salads <- data %>% 
+    filter(Category == "Salads")
+snacksides <- data %>% 
+    filter(Category == "Snacks & Sides")
+desserts <- data %>% 
+    filter(Category == "Desserts")
+beverages <- data %>% 
+  filter(Category == "Beverages") 
+coffeeTea <- data %>% 
+  filter(Category == "Coffee & Tea")
+smoothieShakes <- data %>% 
+  filter(Category == "Smoothies & Shakes")
+```
+
+```{r}
+ggplot(data = data, aes(x = Category, fill = Category)) + 
+  geom_bar(stat = "count", show.legend = FALSE) +
+  coord_flip() + 
+  labs(title = "Total Number of Products by Category", x = "Category", y = "Number of Items")
+```
+
+```{r}
+ggplot(data = data, aes(x = Category, y = mean(Calories), fill = Category)) + 
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  coord_flip() + 
+  labs(title = "Total Number of Products by Category", x = "Category", y = "Number of Items")
+```
+
+
+
+```{r}
+ggplot(breakfast, aes(x = reorder(Item, Calories), y = Calories, fill = Calories)) +
+  geom_bar(stat = "identity") + 
+  coord_flip() +
+  labs(title = "Breakfasts by Calories", x = "") +
+  theme(text = element_text(size = 9.2))
+```
+
+```{r}
+ggplot(beefpork, aes(x = reorder(Item, Calories), y = Calories, fill = Calories)) +
+  geom_bar(stat = "identity") + 
+  coord_flip() +
+  labs(title = "Beef and Pork by Calories", x = "")
+```
+
+```{r}
+ggplot(chickenfish, aes(x = reorder(Item, Calories), y = Calories, fill = Calories)) +
+  geom_bar(stat = "identity") + 
+  coord_flip() +
+  labs(title = "Chicken and Fish by Calories", x = "")
+```
+
+```{r}
+ggplot(desserts, aes(x = reorder(Item, Calories), y = Calories, fill = Calories)) +
+  geom_bar(stat = "identity") + 
+  coord_flip() + 
+  labs(title = "Desserts by Calories", x = "")
+```
+
+```{r}
+ggplot(snacksides, aes(x = reorder(Item, Calories), y = Calories, fill = Calories)) +
+  geom_bar(stat = "identity") + 
+  coord_flip() + 
+  labs(title = "Snacks and Sides by Calories", x = "")
+```
+
+```{r}
+ggplot(salads, aes(x = reorder(Item, Calories), y = Calories, fill = Calories)) +
+  geom_bar(stat = "identity") + 
+  coord_flip() + 
+  labs(title = "Salads by Calories", x = "")
+```
+
+```{r}
+ggplot(beverages, aes(x = reorder(Item, Calories), y = Calories, fill = Calories)) +
+  geom_bar(stat = "identity") + 
+  coord_flip() + 
+  labs(title = "Beverages by Calories", x = "")
+```
+
+```{r}
+coffeeTeaHigh <- coffeeTea %>% 
+  arrange(desc(Calories)) %>% 
+  head(47)
+
+  ggplot(coffeeTeaHigh, aes(x = reorder(Item, Calories), y = Calories, fill = Calories)) +
+  geom_bar(stat = "identity") +
+  theme(text = element_text(size=8.5)) +
+  coord_flip() +
+  labs(title = "High Calorie Coffees and Teas",
+       x = "")
+```
+
+```{r}
+coffeeTeaLow <- coffeeTea %>% 
+  arrange(desc(Calories)) %>% 
+  tail(48)
+
+  ggplot(coffeeTeaLow, aes(x = reorder(Item, Calories), y = Calories, fill = Calories)) +
+  geom_bar(stat = "identity") +
+  theme(text = element_text(size=9.1)) +
+  coord_flip() +
+  labs(title = "Low Calorie Coffees and Teas",
+       x = "")
+```
+
+```{r}
+  ggplot(smoothieShakes, aes(x = reorder(Item, Calories), y = Calories, fill = Calories)) +
+  geom_bar(stat = "identity") +
+  theme(text = element_text(size=9.5)) +
+  coord_flip() +
+  labs(title = "Smoothies and Shakes by Calories",
+       x = "")
+```
+
+```{r}
+#select only continuous attributes
+menu_items_stats <- data[-c(1,2,3)]
+
+#get item names
+menu_items_names <- data[2]
+```
+
+From the principal component analysis below, we see that the first two principal components explain ~98% of the variation in the collection of 260 data points.
+```{r}
+#Principal Component Analysis
+pca_items_stats <- prcomp(menu_items_stats)
+summary(pca_items_stats)
+```
+
+Check the loadings for these 3 components:
+```{r}
+#check new loadings
+pca_items_stats$rot[ , 1:2]
+```
+
+Visualization of PCA contributions
+```{r}
+fviz_screeplot(pca_items_stats)
+```
+
+
+PC1 largest loadings come from the sodium content and calories of the menu items.
+PC2 largest loadings come from the calories and calories from fat. 
+
+Bi-Plot visualization:
+```{r}
+autoplot(pca_items_stats, data = data, colour = "Category", loadings.colour = 'blue',
+         loadings = TRUE, loadings.label = TRUE,
+         loadings.label.size = 4, scale = 0)
+```
+
+```{r}
+autoplot(pca_items_stats,data = data, colour = "Category", loadings.colour = 'blue',
+         loadings = TRUE, loadings.label = FALSE)
+```
+
+Fviz biplot
+```{r}
+fviz_pca(pca_items_stats, geom = "point", repel = TRUE)
+```
+
+Contributions to the first principal component
+```{r}
+fviz_contrib(pca_items_stats, choice = "var", axes = 1) +
+  labs(title = "Contribution of Variables to 1st Principal Component")
+```
+Contributions to the second principal component
+```{r}
+fviz_contrib(pca_items_stats, choice = "var", axes = 2) + 
+  labs(title = "Contribution of Variables to 2nd Principal Component")
+```
+
+From the above principal component analysis, we can determine that calories, calories from fat, and sodium content appear to be the largest contributers to the principal components. 
+
+Focusing on these attributes, let's try to generate clusters in our dataset.
+```{r}
+#reduce dataset to attributes identified from PCA
+reduced_menu_items <- menu_items_stats[-c(3:9, 11:21)]
+
+#scale data
+reduced_menu_scaled <- scale(reduced_menu_items)
+
+#determine optimal number of clusters
+fviz_nbclust(reduced_menu_scaled, kmeans, method = "wss") + 
+  labs(title = "Optimal Number of Clusters")
+```
+
+The visualization above suggests that we will capture most of the data by using 3 or 4 clusters.
+```{r}
+#kmeans clustering
+df_kmeans <- kmeans(reduced_menu_scaled, centers = 4)
+
+str(df_kmeans)
+```
+
+```{r}
+#convert assignment to factor variable
+km_results <- as.factor(df_kmeans$cluster)
+
+#visualize Calories vs calories from fat
+ggplot(reduced_menu_items, aes(x = Calories, y = Calories.from.Fat, color = km_results)) + 
+      geom_point(show.legend = FALSE) + 
+  labs(title = "Calories vs. Calories From Fat", y = "Calories From Fat")
+```
+```{r}
+#visualize calories vs sodium
+ggplot(reduced_menu_items, aes(x = Calories, y = Sodium, color = km_results)) + 
+      geom_point(show.legend = FALSE) +
+  labs(title = "Calories vs. Sodium")
+```
+
+
+
+
+
